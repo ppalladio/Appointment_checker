@@ -1,4 +1,5 @@
 require('dotenv').config();
+const { timeout } = require('puppeteer');
 const pp = require('puppeteer');
 
 // *-----*
@@ -16,28 +17,40 @@ const doctor = '';
  * @return void
  */
 async function Login(page) {
-    await page.goto(LOGIN_PAGE, {
+    await page.goto(APPOINTMENT_PAGE, {
         timeout: 10000,
     });
     // acceptCookies
-    setTimeout(() => {}, 10000);
+
     // input login details
     try {
-        const usernameField = await page.waitForSelector('#ion-input-0');
+        const usernameField = await page.waitForSelector(
+            'xpath=//*[@id="ion-input-0"]',
+        );
         await usernameField.type(USERNAME);
-
         const passwordField = await page.waitForSelector('#ion-input-1');
         await passwordField.type(PASSWORD);
-
         await page.click('.san-button', {
             waitUntil: 'networkidle0',
         });
-        // await page.keyboard.press('Esc');
     } catch (error) {
         console.log('credential error', error);
         return error;
     }
-    await page.goto(APPOINTMENT_PAGE, { timeout: 10000 });
+
+	
+    const specialtySelector = await page.waitForSelector(
+        'button.ionic-selectable-cover',
+    );
+	await specialtySelector.boundingBox()
+await specialtySelector.scrollIntoViewIfNeeded()
+    console.log(specialtySelector);
+	await specialtySelector.click();
+
+	const specialtyiuinput = await page.$('input.searchbar-input')
+	console.log(specialtyiuinput)
+
+
     // await page.waitForNavigation({ waitUntil: 'networkidle0' });
     // console.log('login completed');
 }
@@ -46,11 +59,7 @@ async function Login(page) {
  *
  */
 async function GetAvailableAppointments(page) {
-    const specialtySelector = await page.$$(
-        ' div.msan-appointments-selection-v2__selectors-container > msan-selection-v2-specialties > san-select > article > ion-item > div.san-select__container > ionic-selectable > div.ionic-selectable-inner > button',
-    );
-    console.log(specialtySelector);
-    await specialtySelector[0].click();
+    await specialtySelector.click();
 
     const inputSpecialty = await page.$$(
         'ion-searchbar>div.searchbar-input-container.sc-ion-searchbar-md>input',
